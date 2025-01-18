@@ -1,4 +1,4 @@
-<div style="text-align: center;">
+<div center>
 
 ![bg](./bg.png)
 
