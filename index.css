@@ -1,0 +1,186 @@
+.control {
+    width: 45%;
+    height: 100vh;
+    float: left;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.lyric {
+    position: relative;
+    width: 55%;
+    height: 100vh;
+    float: right;
+}
+
+.control .main {
+    width: 70%;
+    aspect-ratio: 9/13;
+}
+
+.control .main .cover {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+
+
+    
+}
+
+.control .main .cover img {
+    width: 100%;
+    object-fit: cover;
+    border-radius: 20px;
+    box-shadow: 0px 25px 83px #00000082;
+    aspect-ratio: 1/1;
+    transition: transform 0.3s ease;
+}
+
+.control .main .details {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+
+    height: 12%;
+    margin-top: 5%;
+}
+
+.control .main .details .content{
+    width: 50%;
+    height: 100%;
+}
+
+.control .main .details .content .title{
+    font-size: 1.8cqw;
+    font-weight: 600;
+    line-height: 0px;
+    color: #ffffffd0;
+    
+}
+
+.control .main .details .content .author{
+    font-size: 1.3cqw;
+    font-weight: 600;
+    line-height: 10px;
+    color: #ffffff7c;
+}
+
+.control .main .details .more{
+    width: 50%;
+    height: 100%;
+}
+
+.control .main .prograss{
+    width: 100%;
+    height: 10%;
+    margin-top: 2%;
+    
+}
+.range {
+    position: relative;
+    width: 300px;  /* 进度条的宽度 */
+    height: 15%;  /* 进度条的高度 */
+    background-color: #ffffff28;  /* 进度条的背景色 */
+    border-radius: 999999px;
+    cursor: pointer;
+    overflow: hidden;
+    width: 100%;
+    transform-origin: center center;
+    transition: transform 0.5s ease , background-color 0.3s ease;
+}
+
+.light {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0%;  /* 初始宽度为 0，表示未划过 */
+    height: 100%;
+    background-color: #ffffff49;  /* 进度条已划过部分的颜色 */
+    transition: background-color 0.3s ease;
+    /*transition: width 0.1s ease;  /* 平滑过渡 */
+}
+.range:hover{
+    transform: scaleY(2);
+    background-color: #ffffff50;
+}
+.range:hover .light{
+    background-color:#ffffff83 ;
+}
+
+.control .main .prograss .time{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2%;
+    color: #ffffff4d;
+    font-weight: bolder;
+    font-size: 1.2cqw;
+}
+
+.control .main .controlbtn {
+    width: 100%;
+    height: 13%;
+    display: flex;
+    flex-direction: row;
+    margin-top: -5%;
+}
+
+.control .main .controlbtn .mode {
+    width: 20%;
+
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    aspect-ratio: 1/1;
+    
+}
+
+.control .main .controlbtn .mode svg {
+    width: 40%;
+    fill: #ffffff73;
+    
+}
+.control .main .controlbtn .ctrl {
+    width: 60%;
+    display: flex;
+    flex-direction: row;
+}
+
+.control .main .controlbtn .cyc {
+    width: 20%;
+    display: flex;
+    justify-content: right;
+    align-items: center;
+    aspect-ratio: 1/1;
+}
+
+.control .main .controlbtn  .cyc svg {
+    width: 40%;
+    fill: #ffffff79;
+}
+
+.control .main .controlbtn .ctrl .item{
+    width: calc(100% / 3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    aspect-ratio: 1/1;
+    transition: background-color 0.2s ease;
+    border-radius: 50%;
+}
+
+.control .main .controlbtn .ctrl .item svg {
+    width: 80%;
+    fill: #ffffff;
+}
+
+.control .main .controlbtn .ctrl .item:hover{
+    background-color: #ffffff38;
+    
+}
+
+.control .main .controlbtn .ctrl .item:active{
+    background-color: #ffffff6e;
+    
+}

@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>逐字歌词同步</title>
+    <script src="wasm_exec.js"></script>
+    <style>
+        /* 苹方-简 常规体 */
+        @font-face {
+            font-family: 'PingFangSC-Regular-woff2';
+            src: url('./PingFangSC-Regular.woff2') format('woff2');
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000;
+            padding: 0;
+            margin: 0;
+            /*background-image: url("./image.png");
+            background-size: cover;
+            background-repeat: no-repeat;
+            backdrop-filter: blur(50px);*/
+            overflow: hidden;
+            font-family: 'PingFangSC-Regular-woff2';
+            user-select: none;
+
+        }
+
+
+
+        .highlight {
+            transform: translateY(-3px);
+        }
+
+        .lyric_item {
+            font-size: 0;
+            color: #ffffff4a;
+            position: absolute;
+            left: 10px;
+            max-width: calc(100% - 10vw);
+            border-radius: 20px;
+            transition: background 0.7s;
+            cursor: default;
+            padding: 10px;
+
+            font-weight: 1000;
+        }
+
+        .lyric_item:hover {
+            background-color: #ffffff18;
+        }
+
+        .lyric_item_scale {
+            transform: scale(1.1);
+        }
+
+        .lyric_item .main_lrc {
+            display: block;
+            font-size: max(30px, 3.2vw);
+            line-height: 5cqw;
+        }
+
+        .lyric_item .main_lrc .char {
+            display: inline-block;
+            background: linear-gradient(to right, rgba(255, 255, 255, var(--rcolor)) var(--p), rgba(255, 255, 255, var(--color)) var(--rp));
+            background-clip: text;
+            color: transparent;
+        }
+
+
+
+        .lyric_item .translation {
+            font-size: 1.7cqw;
+            line-height: 4cqw;
+        }
+
+        .lyric_item .bg {
+            font-size: 1.6cqw;
+            line-height: 2.2cqw;
+        }
+
+        .lyric_item .bg .char {
+            display: inline-block;
+            background: linear-gradient(to right, rgba(255, 255, 255, var(--rcolor)) var(--p), rgba(255, 255, 255, var(--color)) var(--rp));
+            background-clip: text;
+            color: transparent;
+
+        }
+
+        .lyric_item .bg .translation {
+            font-size: 1.2cqw;
+        }
+
+        .lyric_item .bg {
+            transform: scale(0);
+            transform-origin: 0% 0%;
+            transition: transform 0.5s;
+            display: none;
+        }
+
+
+
+        .right .main_lrc {
+            text-align: right;
+        }
+
+        .right .translation {
+            text-align: right;
+        }
+
+        .right .bg {
+            transform-origin: 100% 0%;
+        }
+
+        .right .bg .text {
+            text-align: right;
+
+        }
+
+        .hl_text {
+            line-height: 150%;
+            display: inline-block;
+            color: rgba(255, 255, 255, var(--color));
+            transform: scale(1);
+            transition: color 0.5s;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+        }
+
+
+        @media screen and (max-width: 1000px) {
+            .lyric_item {
+                margin-bottom: 10px;
+                margin-top: 10px;
+            }
+
+            .main_lrc {
+                line-height: 100%;
+            }
+        }
+
+        .bgShow {
+            transform: scale(1) !important;
+        }
+
+
+
+        @keyframes lrc_heightline {
+            0% {
+                letter-spacing: 0px;
+                text-shadow: none;
+                color: #ffffff4a;
+                transform: translateY(0);
+            }
+
+            50% {
+                letter-spacing: 3px;
+                text-shadow: 0px 0px 10px #ffffff;
+                color: #ffffff;
+                transform: translateY(-3px);
+            }
+
+            100% {
+                letter-spacing: 0px;
+                text-shadow: none;
+                color: #ffffff;
+                transform: translateY(0);
+            }
+        }
+
+        audio {
+            position: fixed;
+            right: 10px;
+            top: 0;
+            z-index: 99;
+        }
+
+        .bgi {
+            width: 100%;
+            height: 100vh;
+            position: fixed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            filter: blur(4.8vw) brightness(.7) contrast(.92) saturate(1.1);
+            z-index: -1;
+        }
+
+        .bgimg {
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            transform: scale(1.2);
+
+        }
+
+        .watting {
+            display: inline-block;
+            font-size: 0;
+            transform-origin: center center;
+
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        .watting_item {
+            width: 15px;
+            height: 15px;
+            background: #ffffff4a;
+            display: inline-block;
+            margin-right: 5px;
+            margin-left: 5px;
+            border-radius: 50%;
+            transition: background 2s;
+        }
+
+        .watting_animate_ing {
+            transition: transform 0.5s;
+            transform-origin: center center;
+            animation: watting 5s infinite;
+        }
+
+        @keyframes watting {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.5);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .watting_animate_end {
+            transform-origin: center center;
+            transition: transform 0.5s;
+
+            transform: scale(0);
+        }
+
+        .watting_highlight {
+            background-color: #ffffff;
+
+        }
+    </style>
+    <link rel="stylesheet" href="./index.css">
+</head>
+
+<body>
+    <div class="bgi">
+        <img src="./image.png" id="bgimg" alt="" class="bgimg">
+    </div>
+    <audio id="audio">
+    </audio>
+    <div class="control">
+        <div class="main">
+            <div class="cover">
+                <img src="" alt="" srcset="" id="bgimg">
+            </div>
+            <div class="details">
+                <div class="content">
+                    <p class="title" id="title">Name</p>
+                    <p class="author" id="author">Author</p>
+                </div>
+                <div class="more">
+
+                </div>
+            </div>
+            <div class="prograss">
+                <div class="range">
+
+                    <div class="light"></div>
+                </div>
+                <div class="time">
+                    <span class="current" id="current">00:00</span>
+                    <span class="residue" id="residue">00:00</span>
+                </div>
+            </div>
+            <div class="controlbtn">
+                <div class="mode">
+                    <svg data-v-8da4e237="" viewBox="0 0 32 28" xmlns="http://www.w3.org/2000/svg">
+                        <path data-v-8da4e237=""
+                            d="M20.767 20.44a.81.81 0 00.49-.183l2.58-2.174c.316-.266.316-.681 0-.955l-2.58-2.183a.81.81 0 00-.49-.183c-.415 0-.673.258-.673.673v1.245h-1.162c-.739 0-1.195-.233-1.718-.847l-1.527-1.801 1.527-1.81c.54-.63.946-.847 1.677-.847h1.203v1.279c0 .407.258.664.673.664a.801.801 0 00.49-.174l2.58-2.175c.316-.266.316-.69 0-.955l-2.58-2.183a.761.761 0 00-.49-.183c-.415 0-.673.258-.673.665v1.386h-1.212c-1.228 0-1.992.34-2.863 1.386l-1.412 1.668-1.469-1.751c-.805-.946-1.569-1.303-2.747-1.303H8.896c-.53 0-.896.348-.896.838s.365.838.896.838h1.437c.697 0 1.162.225 1.685.847l1.519 1.801-1.52 1.81c-.53.623-.954.847-1.643.847H8.896c-.53 0-.896.348-.896.838s.365.838.896.838h1.536c1.179 0 1.901-.356 2.706-1.303l1.478-1.751 1.444 1.718c.822.98 1.627 1.336 2.822 1.336h1.212v1.412c0 .415.258.672.673.672z">
+                        </path>
+                    </svg>
+                </div>
+                <div class="ctrl">
+                    <div class="item">
+                        <svg style="transform: rotate(180deg);" data-v-8da4e237="" viewBox="0 0 32 28"
+                            xmlns="http://www.w3.org/2000/svg" preproc="mirrored">
+                            <path data-v-8da4e237=""
+                                d="M18.14 20.68c.365 0 .672-.107 1.038-.323l8.508-4.997c.623-.365.938-.814.938-1.37 0-.564-.307-.988-.938-1.361l-8.508-4.997c-.366-.216-.68-.324-1.046-.324-.73 0-1.337.556-1.337 1.569v4.773c-.108-.399-.406-.73-.904-1.021L7.382 7.632c-.357-.216-.672-.324-1.037-.324-.73 0-1.345.556-1.345 1.569v10.235c0 1.013.614 1.569 1.345 1.569.365 0 .68-.108 1.037-.324l8.509-4.997c.49-.29.796-.631.904-1.038v4.79c0 1.013.615 1.569 1.345 1.569z">
+                            </path>
+                        </svg>
+                    </div>
+                    <div class="item" id="ctrl_btn">
+                        <svg id="playBtn" style="display: none;" data-v-8da4e237="" viewBox="0 0 32 28"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path data-v-8da4e237=""
+                                d="M13.293 22.772c.955 0 1.436-.481 1.436-1.436V6.677c0-.98-.481-1.427-1.436-1.427h-2.457c-.954 0-1.436.473-1.436 1.427v14.66c-.008.954.473 1.435 1.436 1.435h2.457zm7.87 0c.954 0 1.427-.481 1.427-1.436V6.677c0-.98-.473-1.427-1.428-1.427h-2.465c-.955 0-1.428.473-1.428 1.427v14.66c0 .954.473 1.435 1.428 1.435h2.465z">
+                            </path>
+                        </svg>
+                        <svg id="stopBtn" data-v-8da4e237="" viewBox="0 0 32 28" xmlns="http://www.w3.org/2000/svg"
+                            style="transform: translateX(calc(-0.4 * var(--base-f-unit)));">
+                            <path data-v-8da4e237=""
+                                d="M10.345 23.287c.415 0 .763-.15 1.22-.407l12.742-7.404c.838-.481 1.178-.855 1.178-1.46 0-.599-.34-.972-1.178-1.462L11.565 5.158c-.457-.265-.805-.407-1.22-.407-.789 0-1.345.606-1.345 1.57V21.71c0 .971.556 1.577 1.345 1.577z">
+                            </path>
+                        </svg>
+                    </div>
+                    <div class="item">
+                        <svg data-v-8da4e237="" viewBox="0 0 32 28" xmlns="http://www.w3.org/2000/svg">
+                            <path data-v-8da4e237=""
+                                d="M18.14 20.68c.365 0 .672-.107 1.038-.323l8.508-4.997c.623-.365.938-.814.938-1.37 0-.564-.307-.988-.938-1.361l-8.508-4.997c-.366-.216-.68-.324-1.046-.324-.73 0-1.337.556-1.337 1.569v4.773c-.108-.399-.406-.73-.904-1.021L7.382 7.632c-.357-.216-.672-.324-1.037-.324-.73 0-1.345.556-1.345 1.569v10.235c0 1.013.614 1.569 1.345 1.569.365 0 .68-.108 1.037-.324l8.509-4.997c.49-.29.796-.631.904-1.038v4.79c0 1.013.615 1.569 1.345 1.569z">
+                            </path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="cyc">
+                    <svg data-v-8da4e237="" viewBox="0 0 32 28" xmlns="http://www.w3.org/2000/svg">
+                        <path data-v-8da4e237=""
+                            d="M9.545 14.272a.856.856 0 00.863-.855v-.448c0-1.004.706-1.677 1.785-1.677h5.005v1.362c0 .407.258.664.673.664a.745.745 0 00.49-.183l2.581-2.166c.316-.266.316-.69 0-.955l-2.581-2.183a.745.745 0 00-.49-.183c-.415 0-.672.258-.672.665v1.294h-4.881c-2.217 0-3.628 1.254-3.628 3.213v.597c0 .474.382.855.855.855zm4.864 5.952c.407 0 .664-.257.664-.664v-1.303h4.881c2.225 0 3.628-1.254 3.628-3.213v-.597a.854.854 0 10-1.71 0v.448c0 1.004-.714 1.677-1.793 1.677h-5.006v-1.353c0-.407-.257-.664-.664-.664a.767.767 0 00-.498.182l-2.573 2.175c-.324.257-.315.68 0 .946l2.573 2.192a.807.807 0 00.498.174z">
+                        </path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="lyrics" class="lyric"></div>
+
+    <script type="module">
+        import { gsap } from "gsap";
+        import { parseTTML } from "./parser.js"
+        import VisualLyric from "./visual-lyric.js";
+        const audio = document.getElementById("audio");
+        const bgimg = document.querySelectorAll("#bgimg");
+        // 获取url query参数
+        const urlParams = new URLSearchParams(window.location.search);
+        const musicName = urlParams.get("m") || "ME!";
+        const musicType = urlParams.get("t") || "mp3";
+        audio.src = "./music/" + musicName + "." + musicType;
+        //bgimg.src = "./music/" + musicName + ".png";
+        bgimg.forEach(element => {
+            element.src = "./music/" + musicName + ".png";
+        });
+
+        const title = document.getElementById("title");
+        title.innerText = musicName;
+
+        const author = document.getElementById("author");
+        author.innerText = musicName;
+        const current = document.getElementById("current");
+        const residue = document.getElementById("residue");
+        const playBtn = document.getElementById("playBtn");
+        const stopBtn = document.getElementById("stopBtn");
+        const ctrlBtn = document.getElementById("ctrl_btn");
+
+        const range = document.querySelector('.range');
+        const light = document.querySelector('.light');
+
+        // 记录是否正在拖动
+        let isDragging = false;
+
+        // 处理鼠标按下事件
+        range.addEventListener('mousedown', function (event) {
+            isDragging = true;
+            updateLight(event);  // 在按下时更新进度条
+            document.addEventListener('mousemove', onMouseMove); // 开始拖动
+            document.addEventListener('mouseup', onMouseUp); // 停止拖动
+        });
+
+        // 处理鼠标移动事件
+        function onMouseMove(event) {
+            if (isDragging) {
+                updateLight(event);  // 实时更新进度条
+            }
+        }
+
+        // 处理鼠标松开事件
+        function onMouseUp() {
+            isDragging = false;
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
+
+        // 更新进度条的宽度
+        function updateLight(event) {
+            const rangeRect = range.getBoundingClientRect();
+            let newWidth = event.clientX - rangeRect.left;
+
+            // 限制宽度在进度条的范围内
+            newWidth = Math.max(0, Math.min(newWidth, rangeRect.width));
+
+            // 更新light的宽度
+            const progress = (newWidth / rangeRect.width) * 100;
+            light.style.width = progress + '%';
+            // 更新音频的播放进度
+            audio.currentTime = (newWidth / rangeRect.width) * audio.duration;
+        }
+
+        function setRangeValue(value, total) {
+            const rangeRect = range.getBoundingClientRect();
+            const progress = (value / total) * 100;
+            light.style.width = progress + '%';
+        }
+
+        function loadCurrentTime(audio) {
+            // 计算当前时间和剩余时间
+            const currentTime = audio.currentTime;
+            const duration = audio.duration;
+            const currentMinutes = Math.floor(currentTime / 60);
+            const currentSeconds = Math.floor(currentTime % 60);
+            const durationMinutes = Math.floor(duration / 60);
+            const durationSeconds = Math.floor(duration % 60);
+            current.innerText = `${currentMinutes}:${currentSeconds < 10 ? '0' + currentSeconds : currentSeconds}`;
+            residue.innerText = `${durationMinutes}:${durationSeconds < 10 ? '0' + durationSeconds : durationSeconds}`;
+        }
+
+
+        ctrlBtn.addEventListener('click', function () {
+            if (audio.paused) {
+                audio.play();
+            } else {
+                audio.pause();
+            }
+        });
+        audio.addEventListener('timeupdate', function () {
+            loadCurrentTime(audio);
+            setRangeValue(audio.currentTime, audio.duration);
+        });
+        // 播放状态变化
+        audio.addEventListener('play', function () {
+            playBtn.style.display = 'block';
+            stopBtn.style.display = 'none';
+            bgimg[1].style.transform = "scale(1)";
+        }
+        );
+        audio.addEventListener('pause', function () {
+            playBtn.style.display = 'none';
+            stopBtn.style.display = 'block';
+            bgimg[1].style.transform = "scale(0.7)";
+        }
+        );
+
+        let lyricsData = parseTTML(await fetch("./music/" + musicName + ".ttml").then((res) => res.text()));
+        console.log(lyricsData);
+
+
+        const lyricsContainer = document.getElementById("lyrics");
+
+
+        // 定时调用 highlightLyrics()，每 50ms 更新一次
+        //setInterval(highlightLyrics, 20);
+        const go = new Go();
+
+        async function loadWasm() {
+            const response = await fetch('main.wasm');
+            const bytes = await response.arrayBuffer();
+            const { instance } = await WebAssembly.instantiate(bytes, go.importObject);
+            go.run(instance);
+        }
+
+        loadWasm();
+        const VL = new VisualLyric(audio, lyricsData, lyricsContainer)
+        VL.initAttributes()
+        VL.renderLyrics()
+        window.addLyric = VL.addLyric;
+        window.removeLyric = VL.removeLyric;
+        setInterval(() => {
+            if (audio.paused) {
+                return
+            }
+            highlightLyricsW(lyricsData, audio.currentTime * 1000)
+        }, 20)
+        // 初始化歌词
+        //renderLyrics();
+
+        console.log("initLyrics", lyricsData);
+        // audio 拖动进度条事件
+        audio.addEventListener("seeking", () => {
+            VL.nowPlayingIndex = []
+        })
+
+
+
+        // 监听audio播放完成的事件
+        audio.addEventListener("ended", async () => {
+            audio.currentTime = 0;
+
+            lyricsContainer.innerHTML = "";
+            lyricsData = [];
+            lyricsData = parseTTML(await fetch("./music/" + musicName + ".ttml").then((res) => res.text()));
+            VL.lyricsData = lyricsData;
+            VL.initAttributes();
+            VL.renderLyrics();
+
+            audio.play();
+
+        });
+
+        // 监听空格按钮事件
+        document.addEventListener("keydown", (e) => {
+            if (e.key === " ") {
+                audio.paused ? audio.play() : audio.pause();
+            }
+            if (e.key === "ArrowLeft") {
+                audio.currentTime -= 5;
+            }
+            if (e.key === "ArrowRight") {
+                audio.currentTime += 5;
+            }
+        });
+
+    </script>
+</body>
+
+</html>

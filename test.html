@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTML Parser</title>
+</head>
+
+<body>
+    <h1>TTML 歌词解析器</h1>
+    <textarea id="ttmlInput" rows="10" cols="50">
+    <!-- 将 TTML 歌词粘贴到这里 -->
+  </textarea>
+    <br />
+    <button id="parseButton">解析歌词</button>
+    <pre id="output"></pre>
+
+    <script type="module">
+        document.getElementById("ttmlInput").value = await fetch("./2122308128.ttml").then((res) => res.text());
+        import { parseTTML } from "./parser.js";
+        document.getElementById("parseButton").addEventListener("click", function () {
+            var ttmlText = document.getElementById("ttmlInput").value;
+
+            var result = parseTTML(ttmlText);
+            document.getElementById("output").textContent = JSON.stringify(result, null, 2);
+        });
+    </script>
+</body>
+
+</html>
