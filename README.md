@@ -1,7 +1,7 @@
 > This file has been translated using AI. Some nuances may not be perfectly captured. 
 > For the most accurate information, please refer to the original Chinese version.
 
-<center>
+<div style="text-align: center;">
 
 ![bg](./bg.png)
 
@@ -15,7 +15,7 @@ A web-based component library for displaying lyrics, inspired by Apple Music's l
 
 Although this project does not aim to fully replicate Apple Music, it aims to refine some details better.
 
-</center>
+</div>
 
 ### Technologies Used
 

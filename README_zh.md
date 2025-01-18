@@ -1,4 +1,4 @@
- <center>
+<div style="text-align: center;">
 
 ![bg](./bg.png)
 
@@ -13,7 +13,7 @@
 尽管这个项目的目标并非完全模仿，但是会更好地打磨一些细节
 
 
-</center>
+</div>
 
 ### 本项目使用的技术栈
 
