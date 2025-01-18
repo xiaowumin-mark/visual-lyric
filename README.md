@@ -1,7 +1,7 @@
 > This file has been translated using AI. Some nuances may not be perfectly captured. 
 > For the most accurate information, please refer to the original Chinese version.
 
-<div center>
+<div align=center>
 
 ![bg](./bg.png)
 
