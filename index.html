@@ -467,7 +467,7 @@
 
         loadWasm();
         const VL = new VisualLyric(audio, lyricsData, lyricsContainer)
-        VL.initAttributes()
+        VL.init()
         VL.renderLyrics()
         window.addLyric = VL.addLyric;
         window.removeLyric = VL.removeLyric;
@@ -492,12 +492,12 @@
         audio.addEventListener("ended", async () => {
             audio.currentTime = 0;
 
-            lyricsContainer.innerHTML = "";
-            lyricsData = [];
-            lyricsData = parseTTML(await fetch("./music/" + musicName + ".ttml").then((res) => res.text()));
-            VL.lyricsData = lyricsData;
-            VL.initAttributes();
-            VL.renderLyrics();
+            //lyricsContainer.innerHTML = "";
+            //lyricsData = [];
+            //lyricsData = parseTTML(await fetch("./music/" + musicName + ".ttml").then((res) => res.text()));
+            //VL.lyricsData = lyricsData;
+            //VL.initAttributes();
+            //VL.renderLyrics();
 
             audio.play();
 
