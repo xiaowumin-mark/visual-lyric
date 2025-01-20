@@ -1,29 +1,63 @@
 import { gsap } from "gsap";
 class VisualLyric {
-    constructor(audio, lyric, lyricsContainer, settings) {
+    constructor(audio, lyric, lyricsMainDom, settings) {
         this.audio = audio;
         this.lyricsData = lyric;
-        this.lyricsContainer = lyricsContainer;
+        this.lyricsMainDom = lyricsMainDom;
+        this.lyricsContainer = document.createElement("div");
+        //this.lyricsContainer.style.transition = "transform 0.3s";
+        this.lyricsMainDom.appendChild(this.lyricsContainer);
         this.settings = Object.assign({
             lineHeight: 0,
             nowPlayingOffset: window.innerHeight / 5,
             innerHeightShowItemNum: 10,
             scrollSpeed: 1.2,
         }, settings);
-        this.nowPlayingIndex = []
+        this.nowPlayingIndex = [];
+        this.isScrolling = false;
+        this.scrollTimer = null;
+        this.lyricsContainerY = 0;
+        this.meanHeight = 0;
     }
-    initAttributes() {
+    init() {
         for (let i = 0; i < this.lyricsData.length; i++) {
             this.lyricsData[i].timers = []
             this.lyricsData[i].animates = {
                 gsap: [],
                 anime: []
             }
+            this.lyricsData[i].top = 0;
 
         }
+        // 滚轮滚动事件
+        this.lyricsMainDom.addEventListener("wheel", e => {
+            this.isScrolling = true;
+            // 阻止默认事件
+            e.preventDefault();
+            console.log(e.deltaY);
+            this.lyricsContainerY -= e.deltaY;
+            this.lyricsContainer.style.transform = `translateY(${this.lyricsContainerY}px)`;
+            for (let i = 0; i < this.lyricsData.length; i++) {
+                this.lyricsData[i].parent.style.filter = "blur(0px)";
+                //this.lyricsData[i].parent.style.display = "block";
+                //gsap.to(this.lyricsData[i].parent, {
+                //    duration: 0,
+                //    y: this.lyricsData[i].top,
+                //})
+                this.lyricsData[i].parent.style.transform = `translate(0,${this.lyricsData[i].top}px)`;
+                this.lyricsData[i].parent.style.contentVisibility = "auto";
+            }
+            if (this.scrollTimer) {
+                clearTimeout(this.scrollTimer);
+            }
+            this.scrollTimer = setTimeout(() => {
+                this.isScrolling = false;
+            }, 1000);
+
+        })
     }
     renderLyrics() {
-
+        let totalH = 0;
         for (let i = 0; i < this.lyricsData.length; i++) {
 
             const lrcDiv = document.createElement("div");
@@ -33,6 +67,7 @@ class VisualLyric {
             })
             // 鼠标按下事件
             lrcDiv.addEventListener("mousedown", (event) => {
+                if (this.isScrolling) return;
                 gsap.to(lrcDiv, {
                     duration: 0.7,
                     scale: 0.95,
@@ -40,6 +75,7 @@ class VisualLyric {
                 })
             });
             lrcDiv.addEventListener("mouseup", (event) => {
+                if (this.isScrolling) return;
                 gsap.to(lrcDiv, {
                     duration: 0.7,
                     scale: 1,
@@ -48,6 +84,7 @@ class VisualLyric {
             });
             // 鼠标移出
             lrcDiv.addEventListener("mouseleave", (event) => {
+                if (this.isScrolling) return;
                 //if (lyricsData[i].isPlaying) return;
                 if (this.isPlaying(i)) return;
                 gsap.to(lrcDiv, {
@@ -232,26 +269,41 @@ class VisualLyric {
             setTimeout(() => {
                 //    lyricsData[i].parent.style.top = getTopHeight(1, i, lyricsData) + 200 + "px";
                 //transform: translateY(px);
-                this.lyricsData[i].parent.style.transform = `translateY(${this.getTopHeight(1, i, this.lyricsData) + 200}px)`
+                const top = this.getTopHeight(1, i, this.lyricsData) + this.settings.nowPlayingOffset
+                this.lyricsData[i].parent.style.transform = `translate(0,${top}px)`
+                this.lyricsData[i].top = top
             }, 1000);
+            totalH += this.lyricsData[i].parent.offsetHeight;
         }
+        this.meanHeight = totalH / this.lyricsData.length;
     }
 
     getTopHeight(now, to) {
         const data = this.lyricsData;
         let res = 0;
-        // 判断滚动方向
-        if (to > now) { // 向下滚动
+        
+        // Determine the scroll direction
+        if (to > now) { // Scrolling down
             for (let i = now; i < to; i++) {
-                res += data[i].parent.offsetHeight + this.settings.lineHeight;
+                const cu = data[i].parent.offsetHeight + this.settings.lineHeight;
+                if (cu === 20) { // Element is hidden
+                    res += data[i].isWait ? 0 : this.meanHeight;
+                } else {
+                    res += cu;
+                }
             }
-        } else { // 向上滚动
+        } else { // Scrolling up
             for (let i = now; i > to; i--) {
-                res -= data[i - 1].parent.offsetHeight + this.settings.lineHeight;
+                const cu = data[i - 1].parent.offsetHeight + this.settings.lineHeight;
+                if (cu === 20) { // Element is hidden
+                    res -= data[i - 1].isWait ? 0 : this.meanHeight;
+                } else {
+                    res -= cu;
+                }
             }
         }
-
-        // 使用偏移值作为初始位置，确保歌词居中或位于正确位置
+    
+        // Ensure the top position includes the nowPlayingOffset
         return res + this.settings.nowPlayingOffset;
     }
 
@@ -277,44 +329,15 @@ class VisualLyric {
 
     gd(i) {
         this.lyricsData.forEach(element => {
-            //i = nowPlayingIndex[0]
-            const n = Math.abs(i - 3 - element.index)
-            const ah = n * 70 - n * 20
-            const rn = i - element.index
-            //console.log(rn);
 
 
-
-            //if (nowPlayingIndex.length > 1) return
-
-
-            if (Math.abs(element.index - i) > this.settings.innerHeightShowItemNum) {
-                //element.parent.style.top = getTopHeight(i, element.index, lyricsData) + "px";
-                element.parent.style.transform = `translateY(${this.getTopHeight(i, element.index)}px)`
-
-            } else {
-                setTimeout(() => {
-                    gsap.to(element.parent, {
-                        duration: this.settings.scrollSpeed,
-                        ease: "elastic.out(1,1.5)",
-                        y: this.getTopHeight(i, element.index) + "px"
-                    })
-                }, ah)
-
-            }
-
-            setTimeout(() => {
-                // rn在-10 到 10之间，则执行动画
-                if (rn > -this.settings.innerHeightShowItemNum && rn < this.settings.innerHeightShowItemNum) {
-                    element.parent.style.display = "block"
-                } else {
-                    element.parent.style.display = "none"
-                }
-            }, 100)
             //}
             // 判断nowPlayingIndex中是否包含element.index
             if (!this.isPlaying(element.index)) {
-                element.parent.style.filter = `blur(${Math.abs(element.index - i)}px)`
+                if (!this.isScrolling) {
+                    element.parent.style.filter = `blur(${Math.abs(element.index - i)}px)`
+                }
+
 
                 if (element.haveBg) {
 
@@ -329,11 +352,13 @@ class VisualLyric {
                 if (this.isPlaying(i)) {
                     //console.log("gd", element);
                     setTimeout(() => {
-                        gsap.to(element.parent, {
-                            duration: 0.5,
-                            scale: 1,
-                            delay: 0,
-                        });
+                        if (!this.isScrolling) {
+                            gsap.to(element.parent, {
+                                duration: 0.5,
+                                scale: 1,
+                                delay: 0,
+                            });
+                        }
 
                         this.lyricsData[element.index].animates.anime.forEach(element => {
                             element.cancel()
@@ -417,6 +442,51 @@ class VisualLyric {
                 element.parent.style.filter = `blur(0px)`
             }
 
+            //i = nowPlayingIndex[0]
+            const n = Math.abs(i - 3 - element.index)
+            const ah = n * 70 - n * 20
+            const rn = i - element.index
+            //console.log(rn);
+
+
+
+            //if (nowPlayingIndex.length > 1) return
+
+            if (!this.isScrolling) {
+
+                this.lyricsContainerY = 0
+                this.lyricsContainer.style.transform = `translateY(0px)`;
+                this.lyricsData[element.index].top = this.getTopHeight(i, element.index)
+                if (!(rn > -this.settings.innerHeightShowItemNum && rn < this.settings.innerHeightShowItemNum)) {
+                    //element.parent.style.top = getTopHeight(i, element.index, lyricsData) + "px";
+                    //element.parent.style.transform = `translate(0,${top}px)`
+
+                    gsap.to(element.parent, {
+                        duration: 0,
+                        y: this.lyricsData[element.index].top,
+                    })
+                } else {
+                    setTimeout(() => {
+
+                        gsap.to(element.parent, {
+                            duration: this.settings.scrollSpeed,
+                            ease: "elastic.out(1, 1.35)",
+                            y: this.lyricsData[element.index].top,
+                        })
+                    }, ah)
+
+                }
+                // rn在-10 到 10之间，则执行动画
+                setTimeout(() => {
+                    if (rn > -this.settings.innerHeightShowItemNum && rn < this.settings.innerHeightShowItemNum) {
+                        //element.parent.style.display = "block"
+                        element.parent.style.contentVisibility = "auto"
+                    } else {
+                        //element.parent.style.display = "none"
+                        element.parent.style.contentVisibility = "hidden"
+                    }
+                }, 100)
+            }
 
         });
     }
@@ -441,11 +511,13 @@ class VisualLyric {
 
             }, 10)
         }
-        gsap.to(this.lyricsData[i].parent, {
-            duration: 0.5,
-            scale: 1.04,
-            delay: this.nowPlayingIndex.length > 1 ? 0 : 0.2,
-        });
+        if (!this.isScrolling) {
+            gsap.to(this.lyricsData[i].parent, {
+                duration: 0.5,
+                scale: 1.04,
+                delay: this.nowPlayingIndex.length > 1 ? 0 : 0.2,
+            });
+        }
         if (this.lyricsData[i].isWait) {
             //lyricsData[i].dom.style.transform = 'scale(1)'
             //lyricsData[i].dom.classList.add("watting_animate_ing")
@@ -480,11 +552,14 @@ class VisualLyric {
         // 高亮主歌词
         for (let j = 0; j < words.length; j++) {
             const intervalTime = words[j].begin - currentTime;
+            //console.log(intervalTime);
+
             const timerItem = setTimeout(() => {
                 const duration = (words[j].end - words[j].begin) * 1.25;
                 if (!this.lyricsData[i].words[j].isHeightLine) {
                     gsap.to(this.lyricsData[i].words[j].dom, { // 背景
                         duration: duration / 1000, // 防止时间过长
+                        //duration:0,
                         "--p": "100%",
                         "--rp": "140%",
                         ease: "none",
