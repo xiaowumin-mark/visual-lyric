@@ -335,7 +335,7 @@ class VisualLyric {
             // 判断nowPlayingIndex中是否包含element.index
             if (!this.isPlaying(element.index)) {
                 if (!this.isScrolling) {
-                    element.parent.style.filter = `blur(${Math.abs(element.index - i)}px)`
+                    element.parent.style.filter = `blur(${Math.abs(element.index - i)*2}px)`
                 }
 
 
@@ -473,6 +473,12 @@ class VisualLyric {
                             ease: "elastic.out(1, 1.35)",
                             y: this.lyricsData[element.index].top,
                         })
+                        //element.parent.style.transform = `translate(0,${top}px)`
+                        //gsap.to(element.parent, {
+                        //    duration: 1,
+                        //    ease:"back.inOut(2)",
+                        //    y: this.lyricsData[element.index].top,
+                        //})
                     }, ah)
 
                 }
