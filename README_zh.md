@@ -35,7 +35,7 @@
 
 > [!WARNING]
 > 歌词显示组件库目前仅支持电脑 Web 端，不支持移动端
-> 源码中并没有多音轨判断的逻辑使用go编译的webassembly实现，[Visual Lyric Goland](https://github.com/xiaowumin-mark/visual-Lyric-goland)
+> 源码中并没有多音轨判断的逻辑使用go编译的webassembly实现，[Visual Lyric Goland](https://github.com/xiaowumin-mark/visual-lyric-core)
 > 歌词解析仅支持TTML,更多关于TTML歌词的内容：[amll-ttml-db](https://github.com/Steve-xmh/amll-ttml-db)
 
 ### 如何使用本项目：（本项目的开发还在进行中）

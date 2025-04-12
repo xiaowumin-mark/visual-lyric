@@ -5,5 +5,11 @@ import { defineConfig } from 'vite'
 import topLevelAwait from 'vite-plugin-top-level-await';
 // 8081端口
 export default defineConfig({
-	plugins: [topLevelAwait()]
+	plugins: [topLevelAwait()],
+	server:{
+		watch:{
+			// 监听wasm文件
+			ignored:['*.wasm']
+		}
+	}
 })

@@ -10,8 +10,10 @@ class VisualLyric {
         this.settings = Object.assign({
             lineHeight: 0,
             nowPlayingOffset: window.innerHeight / 5,
+            //nowPlayingOffset:200, 
             innerHeightShowItemNum: 10,
             scrollSpeed: 1.2,
+            blurNum:1
         }, settings);
         this.nowPlayingIndex = [];
         this.isScrolling = false;
@@ -226,7 +228,7 @@ class VisualLyric {
                     tr.innerHTML = this.lyricsData[i].bg.translation;
                     bgLrc.appendChild(tr);
                 }
-                //lrcDiv.appendChild(bgLrc);
+                lrcDiv.appendChild(bgLrc);
                 this.lyricsData[i].bg.dom = bgLrc;
 
             }
@@ -304,6 +306,8 @@ class VisualLyric {
         }
     
         // Ensure the top position includes the nowPlayingOffset
+        //console.log(res + this.settings.nowPlayingOffset);
+        
         return res + this.settings.nowPlayingOffset;
     }
 
@@ -335,7 +339,7 @@ class VisualLyric {
             // 判断nowPlayingIndex中是否包含element.index
             if (!this.isPlaying(element.index)) {
                 if (!this.isScrolling) {
-                    element.parent.style.filter = `blur(${Math.abs(element.index - i)*2}px)`
+                    element.parent.style.filter = `blur(${Math.abs(element.index - i)*this.settings.blurNum}px)`
                 }
 
 
@@ -482,7 +486,6 @@ class VisualLyric {
                     }, ah)
 
                 }
-                // rn在-10 到 10之间，则执行动画
                 setTimeout(() => {
                     if (rn > -this.settings.innerHeightShowItemNum && rn < this.settings.innerHeightShowItemNum) {
                         //element.parent.style.display = "block"
@@ -618,8 +621,8 @@ class VisualLyric {
                                 transform: "scale(1) translateY(0px)",
                                 //marginLeft: "none",
                                 easing: "cubic-bezier(0.5, 0, 0.5, 1)",
-                                color: "rgba(255, 255, 255, 0.2)"
-
+                                color: "rgba(255, 255, 255, 0.2)",
+                                filter: "blur(0px)"
                             },
                             {
                                 //fontSize: "115%",
@@ -628,15 +631,18 @@ class VisualLyric {
                                 textShadow: "#ffffff 0px 0px " + 20 + "px",
                                 //marginLeft: "-" + (10 - (dTim)) * 2.5 / 10 + "px",
                                 easing: "cubic-bezier(0.5, 0, 0.5, 1)",
-                                color: "rgba(255, 255, 255, 1)"
+                                color: "rgba(255, 255, 255, 1)",
+                                filter: "blur(1px)"
                             },
                             {
                                 transform: "scale(1) translateY(0px)",
                                 //transform: "matrix(1, 0, 0, 1, 0, 0)",
                                 textShadow: "none",
                                 easing: "cubic-bezier(0.5, 0, 0.5, 1)",
-                                color: "rgba(255, 255, 255,1)"
+                                color: "rgba(255, 255, 255,1)",
+                                filter: "blur(0px)"
                                 //marginLeft: "none"
+
                             }
                         ], {
                             duration: this.isEnglishOrSymbol(words[j].text) ? duration : duration * 1.5, // 统一时长
@@ -710,7 +716,6 @@ class VisualLyric {
 
         //console.log("removeLyric", i);
         //lyricsData[i].isPlaying = false;
-
 
 
         if (this.lyricsData[i].isWait) {

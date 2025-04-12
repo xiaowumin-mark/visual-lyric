@@ -36,7 +36,7 @@ Although this project does not aim to fully replicate Apple Music, it aims to re
 
 > [!WARNING]
 > The lyric display component library currently supports only desktop web browsers, not mobile devices.
-> The source code does not include logic for multi-track judgment; it uses WebAssembly compiled with Go, see [Visual Lyric Goland](https://github.com/xiaowumin-mark/visual-Lyric-goland).
+> The source code does not include logic for multi-track judgment; it uses WebAssembly compiled with Go, see [Visual Lyric Goland](https://github.com/xiaowumin-mark/visual-lyric-core).
 > Lyric parsing currently supports TTML only. For more information about TTML lyrics, see: [amll-ttml-db](https://github.com/Steve-xmh/amll-ttml-db)
 
 ### How to Use This Project (Project Development is Ongoing)

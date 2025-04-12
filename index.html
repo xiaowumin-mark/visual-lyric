@@ -13,6 +13,24 @@
             src: url('./PingFangSC-Regular.woff2') format('woff2');
         }
 
+        /* 针对Firefox浏览器 */
+        scrollbar-hidden {
+            scrollbar-width: none;
+            /* Firefox */
+        }
+
+        /* 针对IE浏览器 */
+        scrollbar-hidden {
+            -ms-overflow-style: none;
+            /* IE 10+ */
+        }
+
+        /* 针对Chrome和Safari浏览器 */
+        scrollbar-hidden::-webkit-scrollbar {
+            display: none;
+            /* Chrome, Safari */
+        }
+
         body {
             font-family: Arial, sans-serif;
             background-color: #000;
@@ -46,6 +64,7 @@
             padding: 10px;
 
             font-weight: 1000;
+            overflow: visible;
         }
 
         .lyric_item:hover {
@@ -141,6 +160,41 @@
             }
         }
 
+        @media screen and (max-width: 500px) {
+            .control {
+                display: none !important;
+
+            }
+
+            .lyric {
+                width: 100% !important;
+            }
+
+            .main_lrc {
+                line-height: 12cqw !important;
+                font-size: 9cqw !important;
+            }
+
+            .lyric_item .translation {
+                font-size: 4.7cqw !important;
+                line-height: 12cqw !important;
+            }
+
+            .lyric_item .bg .translation {
+                font-size: 3.8cqw !important;
+            }
+
+            .lyric_item .bg {
+                font-size: 5cqw !important;
+                line-height: 8.2cqw !important;
+            }
+
+            .mobile-control{
+                visibility: visible !important;
+            }
+
+        }
+
         .bgShow {
             transform: scale(1) !important;
         }
@@ -194,7 +248,7 @@
             height: 100vh;
             object-fit: cover;
             transform: scale(1.2);
-
+            filter: blur(90px);
         }
 
         .watting {
@@ -252,12 +306,21 @@
     <link rel="stylesheet" href="./index.css">
 </head>
 
-<body>
+<body class="scrollbar-hidden">
     <div class="bgi">
         <img src="./image.png" id="bgimg" alt="" class="bgimg">
     </div>
     <audio id="audio">
     </audio>
+    <div class="mobile-control">
+        <div class="img" onclick="toggleMode()">
+            <img id="bgimg" alt="" src="./image.png">
+        </div>
+        <div class="info">
+            <div class="title" id="titlem">Name</div>
+            <div class="author" id="authorm">Author</div>
+        </div>
+    </div>
     <div class="control">
         <div class="main">
             <div class="cover">
@@ -331,7 +394,7 @@
             </div>
         </div>
     </div>
-    <div id="lyrics" class="lyric"></div>
+    <div id="lyrics" class="lyric scrollbar-hidden"></div>
 
     <script type="module">
         import { gsap } from "gsap";
@@ -352,8 +415,15 @@
         const title = document.getElementById("title");
         title.innerText = musicName;
 
+        const titlem = document.getElementById("titlem");
+        titlem.innerText = musicName;
+
         const author = document.getElementById("author");
         author.innerText = musicName;
+
+        const authorm = document.getElementById("authorm");
+        authorm.innerText = musicName;
+
         const current = document.getElementById("current");
         const residue = document.getElementById("residue");
         const playBtn = document.getElementById("playBtn");
@@ -420,6 +490,15 @@
             current.innerText = `${currentMinutes}:${currentSeconds < 10 ? '0' + currentSeconds : currentSeconds}`;
             residue.innerText = `${durationMinutes}:${durationSeconds < 10 ? '0' + durationSeconds : durationSeconds}`;
         }
+
+
+        window.toggleMode = function () {
+            if (audio.paused) {
+                audio.play();
+            } else {
+                audio.pause();
+            }
+        };
 
 
         ctrlBtn.addEventListener('click', function () {

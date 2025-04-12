@@ -4,26 +4,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TTML Parser</title>
+    <title>歌词高亮动画</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #000;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .text {
+            font-size: 3rem;
+            font-weight: bolder;
+            display: flex;
+            gap: 0.5rem;
+            position: relative;
+        }
+
+        .text span {
+            display: inline-block;
+            position: relative;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>TTML 歌词解析器</h1>
-    <textarea id="ttmlInput" rows="10" cols="50">
-    <!-- 将 TTML 歌词粘贴到这里 -->
-  </textarea>
-    <br />
-    <button id="parseButton">解析歌词</button>
-    <pre id="output"></pre>
-
+    <div class="text"></div>
     <script type="module">
-        document.getElementById("ttmlInput").value = await fetch("./2122308128.ttml").then((res) => res.text());
-        import { parseTTML } from "./parser.js";
-        document.getElementById("parseButton").addEventListener("click", function () {
-            var ttmlText = document.getElementById("ttmlInput").value;
+        const text = 'player';
+        const textContainer = document.querySelector('.text');
+        textContainer.innerHTML = text.split('').map(char => `<span>${char}</span>`).join('');
+        const chars = document.querySelectorAll('.text span');
+       const scaleMultiplier = 2
+        // 获取每个字符初始位置（中心）
+        const charCenters = Array.from(chars).map(char => {
+            const rect = char.getBoundingClientRect();
+            return rect.left + rect.width / 2;
+        });
 
-            var result = parseTTML(ttmlText);
-            document.getElementById("output").textContent = JSON.stringify(result, null, 2);
+        const groupCenter = (charCenters[0] + charCenters[charCenters.length - 1]) / 2;
+
+        chars.forEach((char, i) => {
+            const rect = char.getBoundingClientRect();
+            const charCenter = rect.left + rect.width / 2;
+            const offsetX = (charCenter - groupCenter) * (scaleMultiplier - 1);
+
+            char.animate(
+                [
+                    { transform: 'scale(1)', opacity: 1 ,easing: 'ease'},
+                    { transform: `translateX(${offsetX}px) scale(${scaleMultiplier})`,easing: 'ease'},
+                    { transform: 'scale(1)', opacity: 1 ,easing: 'ease'}
+                ],
+                {
+                    duration: 2000,
+                    delay: i * 2000 * 0.1,
+                    
+                }
+            );
         });
     </script>
 </body>

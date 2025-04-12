@@ -100,7 +100,7 @@ function parseTTML(xml) {
                 text: item.textContent,
                 begin: timeToMilliseconds(item.getAttribute("begin")),
                 end: timeToMilliseconds(item.getAttribute("end")),
-                isHeightLine: timeToMilliseconds(item.getAttribute("end")) - timeToMilliseconds(item.getAttribute("begin")) > 3000
+                isHeightLine: timeToMilliseconds(item.getAttribute("end")) - timeToMilliseconds(item.getAttribute("begin")) > 1500
             });
         } else {
             for (let j = 0; j < children.length; j++) {
@@ -127,7 +127,7 @@ function parseTTML(xml) {
                                         text: bgWord.textContent,
                                         begin: timeToMilliseconds(bgWord.getAttribute("begin")),
                                         end: timeToMilliseconds(bgWord.getAttribute("end")),
-                                        isHeightLine: timeToMilliseconds(bgWord.getAttribute("end")) - timeToMilliseconds(bgWord.getAttribute("begin")) > 3000
+                                        isHeightLine: timeToMilliseconds(bgWord.getAttribute("end")) - timeToMilliseconds(bgWord.getAttribute("begin")) > 1500
                                     });
                                 }
                             }
@@ -136,7 +136,7 @@ function parseTTML(xml) {
                                 text: children[j].textContent,
                                 begin: timeToMilliseconds(children[j].getAttribute("begin")),
                                 end: timeToMilliseconds(children[j].getAttribute("end")),
-                                isHeightLine: timeToMilliseconds(children[j].getAttribute("end")) - timeToMilliseconds(children[j].getAttribute("begin")) > 3000
+                                isHeightLine: timeToMilliseconds(children[j].getAttribute("end")) - timeToMilliseconds(children[j].getAttribute("begin")) > 1500
                             });
                         }
                         lrcItem.bg.words = bgWords;
@@ -152,7 +152,7 @@ function parseTTML(xml) {
                             text: children[j].textContent,
                             begin: timeToMilliseconds(children[j].getAttribute("begin")),
                             end: timeToMilliseconds(children[j].getAttribute("end")),
-                            isHeightLine: timeToMilliseconds(children[j].getAttribute("end")) - timeToMilliseconds(children[j].getAttribute("begin")) > 1000
+                            isHeightLine: timeToMilliseconds(children[j].getAttribute("end")) - timeToMilliseconds(children[j].getAttribute("begin")) > 1500
                         });
                 }
             }
