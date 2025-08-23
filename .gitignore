@@ -1,4 +1,5 @@
 /build
 /dist
-/music
 /node_modules
+/music/*
+!/music/*.ttml

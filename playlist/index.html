@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Visual-Lyric-Playlist</title>
+    </head>
+
+    <body>
+        <md-filled-text-field label="search" style="width: 100%" id="search">
+        </md-filled-text-field>
+        <md-list id="list">
+            <!--<md-list-item>
+            <md-elevated-button>Button</md-elevated-button>
+        </md-list-item>-->
+        </md-list>
+    </body>
+    <script type="module">
+        import "@material/web/button/elevated-button.js";
+        import "@material/web/list/list.js";
+        import "@material/web/divider/divider.js";
+        import "@material/web/list/list-item.js";
+        import "@material/web/textfield/filled-text-field.js";
+
+        function setList(data) {
+            const list = document.getElementById("list");
+            data.forEach((item) => {
+                const ie = document.createElement("md-list-item");
+                /* type="link"
+      href="https://google.com/search?q=buy+kiwis&tbm=shop"
+      target="_blank"*/
+
+                ie.setAttribute("type", "link");
+                ie.setAttribute("href", `/app/?m=${item.name}&t=${item.ext}`);
+                //ie.setAttribute('target', '_blank');
+                ie.innerHTML = `
+            <img slot="start" src="/music/${item.name}.png" alt="" width="56" style="border-radius: 50%;">
+            ${item.name}
+            `;
+                list.appendChild(ie);
+                list.appendChild(document.createElement("md-divider"));
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            fetch("/api/playlist")
+                .then((res) => res.json())
+                .then((data) => {
+                    setList(data);
+                });
+            const search = document.getElementById("search");
+            search.addEventListener("input", () => {
+                console.log(search.value);
+
+                if (search.value == "") {
+                    fetch("/api/playlist")
+                        .then((res) => res.json())
+                        .then((data) => {
+                            document.getElementById("list").innerHTML = "";
+                            setList(data);
+                        });
+                } else {
+                    fetch("/api/search?q=" + search.value)
+                        .then((res) => res.json())
+                        .then((data) => {
+                            document.getElementById("list").innerHTML = "";
+                            setList(data);
+                        });
+                }
+            });
+        });
+    </script>
+</html>

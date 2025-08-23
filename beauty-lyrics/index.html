@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Visual-Lyric-Beauty-Lyrics</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .top {
+            width: 100%;
+            height: 80px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            padding-left: 20px;
+            padding-right: 20px;
+            box-sizing: border-box;
+            border-bottom: solid 1px #ccc;
+            gap: 10px;
+        }
+
+        .main {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        textarea {
+            font-size: 14px;
+            border: 1px solid #ccc;
+            appearance: none;
+            transition: border 0.2s ease, background-color 0.2s ease;
+            line-height: 20px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border: solid 1px rgb(103, 80, 164);
+            background-color: #ffffff7e;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="top">
+        导入方式:
+        <mdui-select value="onlyLyrics" style="width: 200px;" id="importType">
+            <mdui-menu-item value="onlyLyrics">仅歌词</mdui-menu-item>
+            <mdui-menu-item value="lyricsAndTrans">歌词加翻译</mdui-menu-item>
+        </mdui-select>
+        英文是否分割音节:<mdui-switch id="split"></mdui-switch>
+        <div style="flex-grow: 1"></div>
+        <mdui-button variant="elevated" id="clear">清空</mdui-button>
+        <mdui-button id="start">分词</mdui-button>
+    </div>
+    <div class="main">
+        <textarea style="width:100%;height: 100%;box-sizing: border-box;resize: none;" id="input"></textarea>
+        <textarea style="width:100%;height: 100%;box-sizing: border-box;resize: none;" id="output"></textarea>
+    </div>
+</body>
+<script type="module">
+    import "mdui/mdui.css";
+    import "mdui";
+    import { hyphenateSync as hyphenate } from 'hyphen/en';
+
+    const input = document.getElementById("input");
+    const output = document.getElementById("output");
+    const start = document.getElementById("start");
+    const clear = document.getElementById("clear");
+    const importType = document.getElementById("importType");
+    const sp = document.getElementById("split");
+
+    async function processLyricLine(line) {
+        const tokens = line.match(/[\u4e00-\u9fa5]|[a-zA-Z]+|\d+|[^\s\w\u4e00-\u9fa5]/g);
+        if (!tokens) return "";
+        
+        const processed = await Promise.all(
+            tokens.map(async token => {
+                if (/^[a-zA-Z]+$/.test(token) && sp.checked) {
+                    return hyphenate(token, { hyphenChar: "\\" });
+                } else {
+                    return token;
+                }
+            })
+        );
+        
+        return processed.join("\\ \\");
+    }
+
+    async function customSplit(inputText, mode) {
+        const lines = inputText.split(/\r?\n/);
+        const resultLines = [];
+
+        if (mode === "onlyLyrics") {
+            // 仅处理歌词模式
+            for (const line of lines) {
+                if (line.trim() === "") {
+                    resultLines.push("");
+                    continue;
+                }
+                resultLines.push(await processLyricLine(line));
+            }
+        } else {
+            // 歌词加翻译模式（奇数行是歌词，偶数行是翻译）
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].trim() === "") {
+                    resultLines.push("");
+                    continue;
+                }
+                
+                if (i % 2 === 0) {
+                    // 歌词行（偶数索引 0,2,4...）
+                    resultLines.push(await processLyricLine(lines[i]));
+                } else {
+                    // 翻译行（奇数索引 1,3,5...），原样保留
+                    resultLines.push(lines[i]);
+                }
+            }
+        }
+
+        return resultLines.join("\n");
+    }
+
+    start.addEventListener("click", async () => {
+        const inputText = input.value;
+        const mode = importType.value;
+        const result = await customSplit(inputText, mode);
+        output.value = result;
+    });
+
+    clear.addEventListener("click", () => {
+        input.value = "";
+        output.value = "";
+    });
+
+    // 同步滚动
+    input.addEventListener("scroll", () => {
+        const percent = input.scrollTop / (input.scrollHeight - input.clientHeight);
+        output.scrollTop = (output.scrollHeight - output.clientHeight) * percent;
+    });
+    output.addEventListener("scroll", () => {
+        const percent = output.scrollTop / (output.scrollHeight - output.clientHeight);
+        input.scrollTop = (input.scrollHeight - input.clientHeight) * percent;
+    });
+</script>
+
+</html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="/static/wasm_exec.js"></script>
+</head>
+
+<body>
+
+</body>
+<script>
+    //window.lrcText = await fetch('./music/call me maybe.ttml').then(res => res.text());
+    const go = new Go(); // Defined in wasm_exec.js
+    const WASM_URL = '/QQMusicDecoderGOJS.wasm';
+    WebAssembly.instantiateStreaming(fetch(WASM_URL), go.importObject).then((result) => {
+        go.run(result.instance);
+    });
+</script>
+
+</html>

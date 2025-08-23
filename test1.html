@@ -9,89 +9,101 @@
         * {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+
+        }
+
+        :root {
+            --color: 0.2;
+            --rcolor: 1;
+            --bglw: 200px;
         }
 
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
+
             height: 100vh;
-            background-color: #f0f0f0;
+            background-color: #f1f1f1;
         }
 
-        .char span {
-            display: inline-block;
-            transform: scale(1);
-            background: linear-gradient(to right, rgb(255, 9, 9) calc(var(--p) - 15px), rgba(255, 44, 44, 0.5) var(--p));
-            background-clip: text;
-            color: transparent;
+        .box {
+            width: 1000px;
+            height: 100px;
+            background-color: #ff7373;
+
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .char {
-            font-size: 100px;
-            font-weight: 1000;
-            line-height: 100px;
-            display: inline-block;
+        .item {
+            height: 100px;
+            border: #c9c9c9 solid 1px;
+            box-sizing: border-box;
+            overflow: hidden;
+
+            background: linear-gradient(to right, rgba(0, 0, 0, var(--rcolor)) calc(var(--p) - var(--bglw)), rgba(0, 0, 0, var(--color)) var(--p));
 
         }
     </style>
 </head>
 
 <body>
-    <div class="char">
-        <span>a</span><span>a</span><span>a</span><span>a</span><span>a</span><span>a</span>
-
+    <div class="box">
+        <div class="item" style="width: 15%;--p:0px;"></div>
+        <div class="item" style="width: 5%;--p:0px;"></div>
+        <div class="item" style="width: 10%;--p:0px;"></div>
+        <div class="item" style="width: 7%;--p:0px;"></div>
+        <div class="item" style="width: 13%;--p:0px;"></div>
+        <div class="item" style="width: 20%;--p:0px;"></div>
+        <div class="item" style="width: 5%;--p:0px;"></div>
+        <div class="item" style="width: 5%;--p:0px;"></div>
+        <div class="item" style="width: 10%;--p:0px;"></div>
+        <div class="item" style="width: 10%;--p:0px;"></div>
     </div>
-    <script type="module">
-        import gsap from "gsap"
-
-        const chars = document.querySelectorAll('.char span');
-
-        let dur = 2;
-        chars.forEach((char, index) => {
-            const charWidth = char.offsetWidth;
-            const oldV = 100 / (dur / chars.length);
-            const ope = (35 / charWidth * 100) + 100
-            const nT = ope / oldV
-
-            gsap.set(char, {
-                "--p": "0%",
-                duration: 0,
-                ease: "none",
-            });
-            gsap.to(char, {
-                "--p": ope + "%",
-                duration: nT,
-                ease: "none",
-                delay: index * (dur / chars.length),
-            });
-            char.animate([
-                {},
-                { transform: `translateX(${getScaleOffset(index, 2)}px) scale(2)`},
-
-            ], {
-                duration: dur * 1000,
-                delay: index * (dur / chars.length) * 1000,
-                easing: 'ease',
-                fill: 'forwards'
-            });
-        });
-
-        /*
-        func getScaleOffset(index int, scale float64, dom js.Value) float64 {
-    chars := dom.Get("children")
-    centerIndex := (chars.Length() - 1) / 2
-    baseWidth := chars.Index(0).Get("offsetWidth").Float()
-    return float64(index-centerIndex) * baseWidth * (scale - 1) * 0.5
-}
-*/
-        function getScaleOffset(index, scale) {
-            const centerIndex = (chars.length - 1) / 2;
-            const baseWidth = chars[0].offsetWidth;
-            return (index - centerIndex) * baseWidth * (scale - 1) * 0.5;
-        }
-    </script>
 </body>
+<script type="module">
+    import gsap from "gsap"
+    const V = 100 // 10px/s
+    const items = document.querySelectorAll(".item")
+    const itemsDuration = [
+        600, 300, 300, 500, 1000, 300, 200, 800, 500, 1000,
+    ]
+    let tqAnimation = []
+    let tl = gsap.timeline()
+    for (let index = 0; index < items.length; index++) {
+        const item = items[index];
+        const du = itemsDuration[index] / 1000
+
+        let delay = 0
+        for (let i = 0; i < index; i++) {
+            delay += itemsDuration[i] / 1000
+
+        }
+        //gsap.to(item, {
+        //    duration: (item.offsetWidth + 200) / (item.offsetWidth / du), // 10px/s
+        //    "--p": item.offsetWidth + 200 + "px",
+        //    delay: delay,
+        //    ease: "none",
+        //    onStart:function(){
+        //        if (tqAnimation[index]){
+        //            tqAnimation[index].kill()
+        //            console.log("kill");
+        //            
+        //        }
+        //    }
+        //})
+        tl.to(item, {
+            duration: du,
+            "--p": item.offsetWidth +200+ "px",
+            ease: "none",
+            
+        })
+        tl.to(items[index +1], {
+            duration: 200 / (item.offsetWidth / du),
+            "--p": "200px",
+            ease: "none",
+        },"-=" + 200 / (item.offsetWidth / du))
+    }
+</script>
 
 </html>

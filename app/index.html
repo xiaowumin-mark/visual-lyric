@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/static/wasm_exec.js"></script>
+    <title>visual-lyric</title>
+    <link rel="stylesheet" href="/static/vl.css">
+</head>
+
+<body>
+    <div class="dialog" id="dialog">
+        <div class="dialog-content">
+            <p>歌曲<input type="file" name="music" id="ex_music" accept="audio/*"></p>
+            <p>封面<input type="file" name="cover" id="ex_cover" accept="image/*"></p>
+            <p>歌词<input type="file" name="ttml" id="ex_ttml" accept=".ttml"></p>
+            <button id="comp_ex">完成</button>
+            
+            
+        </div>
+    </div>
+    <div class="bgi">
+        <img src="/bg.png" data-muaic-background alt="" class="bgimg">
+    </div>
+
+    <div class="lyric scrollbar-hidden" id="lrcView"></div>
+</body>
+
+<script type="module">
+    import { gsap } from "gsap";
+    window.gsap = gsap;
+    window.lrcView = document.getElementById('lrcView');
+    window.getTopHeight = (now, to) => {
+        let res = 0;
+        if (to > now) {
+            for (let i = now; i < to; i++) {
+                res += window.lrcView.children[i].offsetHeight;
+            }
+        } else {
+            for (let j = now; j > to; j--) {
+                res -= window.lrcView.children[j - 1].offsetHeight;
+            }
+        }
+        return res + 200;
+    }
+    //window.lrcText = await fetch('./music/call me maybe.ttml').then(res => res.text());
+    const go = new Go(); // Defined in wasm_exec.js
+    const WASM_URL = '/visual-lyric-core.wasm';
+    WebAssembly.instantiateStreaming(fetch(WASM_URL), go.importObject).then((result) => {
+        go.run(result.instance);
+    });
+
+</script>
+
+</html>
