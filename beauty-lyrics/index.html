@@ -38,11 +38,13 @@
         }
 
         textarea {
-            font-size: 14px;
+            font-size: 20px;
             border: 1px solid #ccc;
             appearance: none;
             transition: border 0.2s ease, background-color 0.2s ease;
             line-height: 20px;
+            font-family: "Cascadia Code";
+            line-height: 30px;
         }
 
         textarea:focus {
@@ -83,21 +85,48 @@
     const sp = document.getElementById("split");
 
     async function processLyricLine(line) {
-        const tokens = line.match(/[\u4e00-\u9fa5]|[a-zA-Z]+|\d+|[^\s\w\u4e00-\u9fa5]/g);
-        if (!tokens) return "";
-        
+        // 改进正则：包括连字符/撇号在英文单词中
+        const rawTokens = line.match(/[\u4e00-\u9fa5]|[a-zA-Z]+(?:['’-][a-zA-Z]+)*|\d+|[^\s\w\u4e00-\u9fa5]/g);
+        if (!rawTokens) return "";
+
+        // 合并符号到相邻单词
+        const tokens = [];
+        for (let i = 0; i < rawTokens.length; i++) {
+            const cur = rawTokens[i];
+            const prev = tokens[tokens.length - 1];
+
+            // 如果当前是开头符号且下一个是单词 → 与后面合并
+            if (/^[“"‘'(\[]$/.test(cur) && i < rawTokens.length - 1 && /^[a-zA-Z\u4e00-\u9fa5]/.test(rawTokens[i + 1])) {
+                rawTokens[i + 1] = cur + rawTokens[i + 1];
+                continue;
+            }
+
+            // 如果当前是结束符号且上一个是单词 → 与上一个合并
+            if (/^[,，.!?;:'"’)\]]$/.test(cur) && prev && /[a-zA-Z\u4e00-\u9fa50-9]$/.test(prev)) {
+                tokens[tokens.length - 1] = prev + cur;
+                continue;
+            }
+
+            tokens.push(cur);
+        }
+
+        // 分音节
         const processed = await Promise.all(
             tokens.map(async token => {
-                if (/^[a-zA-Z]+$/.test(token) && sp.checked) {
-                    return hyphenate(token, { hyphenChar: "\\" });
-                } else {
-                    return token;
+                // 仅对纯英文单词分音节（不含符号/撇号/连字符）
+                const core = token.replace(/^[^a-zA-Z]+|[^a-zA-Z]+$/g, "");
+                if (/^[a-zA-Z]+$/.test(core) && sp.checked) {
+                    const hyphenated = hyphenate(core, { hyphenChar: "\\" });
+                    return token.replace(core, hyphenated);
                 }
+                return token;
             })
         );
-        
+
         return processed.join("\\ \\");
     }
+
+
 
     async function customSplit(inputText, mode) {
         const lines = inputText.split(/\r?\n/);
@@ -119,7 +148,7 @@
                     resultLines.push("");
                     continue;
                 }
-                
+
                 if (i % 2 === 0) {
                     // 歌词行（偶数索引 0,2,4...）
                     resultLines.push(await processLyricLine(lines[i]));
