@@ -444,10 +444,25 @@
             document.addEventListener('mouseup', onMouseUp); // 停止拖动
         });
 
+        // 处理触控开始事件
+        range.addEventListener('touchstart', function (event) {
+            isDragging = true;
+            updateLight(event);  // 在按下时更新进度条
+            document.addEventListener('touchmove', onTouchMove); // 开始拖动
+            document.addEventListener('touchend', onTouchEnd); // 停止拖动
+        });
+
         // 处理鼠标移动事件
         function onMouseMove(event) {
             if (isDragging) {
                 updateLight(event);  // 实时更新进度条
+            }
+        }
+
+        // 处理触控移动事件
+        function onTouchMove(event) {
+            if (isDragging) {
+                updateLight(event.touches[0]);  // 实时更新进度条
             }
         }
 
@@ -458,10 +473,20 @@
             document.removeEventListener('mouseup', onMouseUp);
         }
 
+        // 处理触控结束事件
+        function onTouchEnd() {
+            isDragging = false;
+            document.removeEventListener('touchmove', onTouchMove);
+            document.removeEventListener('touchend', onTouchEnd);
+        }
+
         // 更新进度条的宽度
         function updateLight(event) {
             const rangeRect = range.getBoundingClientRect();
-            let newWidth = event.clientX - rangeRect.left;
+            let newWidth = event.clientX - rangeRect.left; // 对应鼠标
+            if (event.touches) { // 触摸事件的处理
+                newWidth = event.touches[0].clientX - rangeRect.left;
+            }
 
             // 限制宽度在进度条的范围内
             newWidth = Math.max(0, Math.min(newWidth, rangeRect.width));
