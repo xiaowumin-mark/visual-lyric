@@ -168,13 +168,54 @@ function parseTTML(xml) {
     return lrc;
 }
 
+// 更稳健的时间字符串解析函数
 function timeToMilliseconds(time) {
     if (!time) return 0;
-    const [minutes, seconds, milliseconds] = time.split(/[:.]/).map(Number);
-    if (isNaN(minutes) || isNaN(seconds) || isNaN(milliseconds)) {
-        throw new Error("Invalid time format. Use 'MM:SS.mmm'");
+    let s = String(time).trim();
+    if (!s) return 0;
+
+    // 辅助：解析 "SS" 或 "SS.mmm" 返回 [seconds, milliseconds]
+    function parseSecAndMs(part) {
+        const dotIdx = part.indexOf('.');
+        if (dotIdx === -1) {
+            const sec = parseInt(part || "0", 10);
+            return [isNaN(sec) ? 0 : sec, 0];
+        } else {
+            const secPart = part.slice(0, dotIdx) || "0";
+            let fracPart = part.slice(dotIdx + 1) || "0";
+            const sec = parseInt(secPart, 10);
+            // 保证毫秒为三位：截断或补零
+            if (fracPart.length > 3) fracPart = fracPart.slice(0, 3);
+            while (fracPart.length < 3) fracPart += '0';
+            const ms = parseInt(fracPart, 10);
+            return [(isNaN(sec) ? 0 : sec), (isNaN(ms) ? 0 : ms)];
+        }
     }
-    return (minutes * 60 * 1000) + (seconds * 1000) + milliseconds;
+
+    try {
+        const colonCount = (s.match(/:/g) || []).length;
+        if (colonCount === 2) {
+            // hh:mm:ss(.mmm)
+            const parts = s.split(':');
+            const h = parseInt(parts[0] || "0", 10) || 0;
+            const m = parseInt(parts[1] || "0", 10) || 0;
+            const [sec, ms] = parseSecAndMs(parts[2] || "0");
+            return h * 3600 * 1000 + m * 60 * 1000 + sec * 1000 + ms;
+        } else if (colonCount === 1) {
+            // mm:ss(.mmm)
+            const parts = s.split(':');
+            const m = parseInt(parts[0] || "0", 10) || 0;
+            const [sec, ms] = parseSecAndMs(parts[1] || "0");
+            return m * 60 * 1000 + sec * 1000 + ms;
+        } else {
+            // seconds or seconds.fraction
+            const f = parseFloat(s);
+            if (isNaN(f)) return 0;
+            return Math.round(f * 1000);
+        }
+    } catch (e) {
+        return 0;
+    }
 }
 
 function parseLRC(str, endTime) {
